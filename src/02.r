@@ -5,18 +5,30 @@ moves <- c(
   "X" = 1, "Y" = 2, "Z" = 3
 )
 
-res <- c(0, 3, 6)
 wins <- c(2, 3, 1)
 loses <- c(3, 1, 2)
+scores <- c(0, 3, 6)
 
-df <- read_delim("data/02.txt", col_names = FALSE, col_types = c("c", "c")) |>
-  mutate(X1 = moves[X1], X2 = moves[X2])
+data <- read_delim("data/02.txt",
+  col_names = c("opponent", "player"),
+  col_types = c("c", "c")
+) |> mutate(
+  opponent = moves[opponent],
+  strategy = moves[player]
+)
 
-r1 <- df |>
-  mutate(res = case_when(X2 == wins[X1] ~ 6, X1 == X2 ~ 3, TRUE ~ 0) + X2)
+data |>
+  mutate(score = case_when(
+    strategy == wins[opponent] ~ 6,
+    strategy == loses[opponent] ~ 0,
+    strategy == opponent ~ 3,
+  ) + strategy) |>
+  summarize(sum(score))
 
-r2 <- df |>
-  mutate(res = case_when(X2 == 3 ~ wins[X1], X2 == 1 ~ loses[X1], TRUE ~ X1) + res[X2])
-
-sum(r1$res)
-sum(r2$res)
+data |>
+  mutate(score = case_when(
+    strategy == 3 ~ wins[opponent],
+    strategy == 1 ~ loses[opponent],
+    strategy == 2 ~ opponent
+  ) + scores[strategy]) |>
+  summarize(sum(score))
