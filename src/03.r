@@ -19,8 +19,7 @@ find_group_badges <- function(data) {
 
 calculate_priority <- function(common_items) {
   common_items |>
-    mutate(code = sapply(common, utf8ToInt)) |>
-    mutate(priority = code - ifelse(code > 96, 96, 38)) |>
+    mutate(priority = match(common, c(letters, LETTERS))) |>
     summarize(sum(priority))
 }
 
