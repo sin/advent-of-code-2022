@@ -1,13 +1,17 @@
 import range from "https://esm.sh/js-range@1.0.0";
 
 const data = (await Deno.readTextFile("./data/05.txt")).split("\n");
-const heaps = Array.from(Array(9), () => [] as string[]);
+const heaps: string[][] = [];
 
-for (const line of range(7, -1, -1)) {
-  for (const char of range(0, 9)) {
-    const crate = data[line][char * 4 + 1];
-    if (/[A-Z]/.test(crate)) heaps[char].push(crate);
+for (const position of range(1, data[0].length, 4)) {
+  const stack: string[] = [];
+
+  for (const line of range(7, -1, -1)) {
+    const crate = data[line][position];
+    if (/[A-Z]/.test(crate)) stack.push(crate);
   }
+
+  heaps.push(stack);
 }
 
 function rearrange(reverse = true) {
