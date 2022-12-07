@@ -30,12 +30,10 @@ class Directory {
     return this.children.find((child) => child.name === name);
   }
 
-  listAllDirectories() {
-    const subdirs: Directory[] = this.children
-      .filter((child) => child instanceof Directory)
-      .flatMap((child) => (child as Directory).listAllDirectories());
-
-    return [this, ...subdirs];
+  listAllDirectories(): Directory[] {
+    return this.children
+      .filter((child): child is Directory => child instanceof Directory)
+      .flatMap((child) => [child, ...child.listAllDirectories()]);
   }
 }
 
