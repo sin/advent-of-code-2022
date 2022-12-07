@@ -27,16 +27,11 @@ class Directory {
   findChild(name: string) {
     return this.children.find((child) => child.name === name);
   }
-
-  listAllDirectories(): Directory[] {
-    return this.children
-      .filter((child): child is Directory => child instanceof Directory)
-      .flatMap((child) => [child, ...child.listAllDirectories()]);
-  }
 }
 
 function createFileSystem() {
   const root: Directory = new Directory("root");
+  const directories: Directory[] = [root];
   let cwd = root;
 
   function changeDirectory(path: string) {
@@ -52,7 +47,9 @@ function createFileSystem() {
     }
 
     if (x === "dir") {
-      cwd.addChild(new Directory(name));
+      const directory = new Directory(name);
+      cwd.addChild(directory);
+      directories.push(directory);
     }
 
     if (!isNaN(Number(x))) {
@@ -60,13 +57,11 @@ function createFileSystem() {
     }
   });
 
-  return root;
+  return directories;
 }
 
 const filesystem = createFileSystem();
-const sizes = filesystem
-  .listAllDirectories()
-  .map((directory) => directory.size);
+const sizes = filesystem.map((directory) => directory.size);
 
 sizes.filter((size) => size < 100000).reduce((sum, size) => sum + size);
-Math.min(...sizes.filter((size) => size > filesystem.size - 40000000));
+Math.min(...sizes.filter((size) => size > filesystem[0].size - 40000000));
