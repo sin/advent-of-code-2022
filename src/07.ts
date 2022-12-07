@@ -2,26 +2,24 @@ const input = (await Deno.readTextFile("./data/07.txt"))
   .split("\n")
   .map((line: string) => line.split(" "));
 
-type ChildrenList = (Directory | File)[];
+type Child = Directory | File;
 
 class File {
-  constructor(
-    public name: string,
-    public size: number,
-    public parent: Directory | null = null
-  ) {}
+  public parent!: Directory;
+  constructor(public name: string, public size: number) {}
 }
 
 class Directory {
-  children: ChildrenList = [];
+  public parent!: Directory;
+  children: Child[] = [];
 
-  constructor(public name: string, public parent: Directory | null = null) {}
+  constructor(public name: string) {}
 
   get size(): number {
     return this.children.reduce((total, child) => total + child.size, 0);
   }
 
-  addChild(child: Directory | File) {
+  addChild(child: Child) {
     this.children.push(child);
     child.parent = this;
   }
@@ -38,38 +36,37 @@ class Directory {
 }
 
 function createFileSystem() {
-  const treeRoot: Directory = new Directory("root", null);
-  let cwd = treeRoot;
+  const root: Directory = new Directory("root");
+  let cwd = root;
 
   function changeDirectory(path: string) {
-    if (path === "/") return treeRoot;
+    if (path === "/") return root;
     if (path === "..") return cwd.parent;
 
-    return cwd.findChild(path);
+    return cwd.findChild(path) as Directory;
   }
 
-  for (const [x, name, path] of input) {
-    // x is either: '$', 'dir' or file size
-    if (x === "$") {
-      if (name === "cd") {
-        cwd = changeDirectory(path) as Directory;
-      }
-      continue; // no-op if command is 'ls'
+  input.forEach(([x, name, path]) => {
+    if (x === "$" && name === "cd") {
+      cwd = changeDirectory(path);
     }
 
-    const child = x === "dir" ? new Directory(name) : new File(name, Number(x));
-    cwd.addChild(child);
-  }
+    if (x === "dir") {
+      cwd.addChild(new Directory(name));
+    }
 
-  return treeRoot;
+    if (!isNaN(Number(x))) {
+      cwd.addChild(new File(name, Number(x)));
+    }
+  });
+
+  return root;
 }
 
 const filesystem = createFileSystem();
-const toFree = filesystem.size - 40000000;
-
 const sizes = filesystem
   .listAllDirectories()
   .map((directory) => directory.size);
 
 sizes.filter((size) => size < 100000).reduce((sum, size) => sum + size);
-Math.min(...sizes.filter((size) => size > toFree));
+Math.min(...sizes.filter((size) => size > filesystem.size - 40000000));
