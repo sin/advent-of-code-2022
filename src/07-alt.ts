@@ -6,7 +6,7 @@ let stack: number[] = [];
 
 lines.forEach(([size, command, path]) => {
   if (command == "ls") stack.push(0);
-  if (!isNaN(Number(size))) stack = stack.map((total) => total + Number(size));
+  if (Number(size)) stack = stack.map((total) => total + Number(size));
   if (path == "..") sizes.push(stack.pop() as number);
   if (!size) sizes.push(...stack);
 });
