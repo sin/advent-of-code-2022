@@ -1,10 +1,9 @@
 library(tidyverse)
 
-data <- readLines("data/03.txt") %>%
-  tibble(rucksack = .)
+data <- read_lines("data/03.txt")
 
 find_common_items <- function(data) {
-  data |>
+  tibble(rucksack = data) |>
     mutate(items = strsplit(rucksack, "")) |>
     mutate(sacks = map(items, ~ split(., cut(seq_along(.), 2)))) |>
     transmute(common = map_chr(sacks, ~ Reduce(intersect, .)))
